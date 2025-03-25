@@ -7,10 +7,10 @@ final class AntiTrapData extends ObbyData<AntiTrap>
     public AntiTrapData(AntiTrap module)
     {
         super(module);
-        register(module.mode, "-Crystal places a crystal so you can't " +
-                "get trapped.\n-FacePlace like Surround but one block higher." +
-                "\n-Fill fills spots where crystals" +
-                " could be placed around you.");
+        register(module.mode, "- Crystal : Places crystals in nearby spots to prevent AutoTraps.\n" +
+                "- Faceplace : Places obsidian to fill your surround higher to prevent faceplacing.\n" +
+                "- Fill : Places obsidian in holes next to your surround to make surround failure harder.\n" +
+                "- Bomb : Basically extended SelfTrap, prevents you from getting CrystalBombed.");
         register(module.offhand, "Switches to the Offhand.");
         register(module.timeOut, "Interval between toggling this module." +
                 " (for fat fingers)");
@@ -33,6 +33,6 @@ final class AntiTrapData extends ObbyData<AntiTrap>
     @Override
     public String getDescription()
     {
-        return "Places a crystal next to you to block possible AutoTraps.";
+        return "Places crystals or obsidian to prevent AutoTraps.";
     }
 }

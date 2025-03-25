@@ -13,6 +13,7 @@ import me.earth.earthhack.impl.util.minecraft.entity.EntityUtil;
 import me.earth.earthhack.impl.util.render.Interpolation;
 import me.earth.earthhack.impl.util.render.Render2DUtil;
 import me.earth.earthhack.impl.util.render.RenderUtil;
+import me.earth.earthhack.impl.util.render.entity.JelloRender;
 import me.earth.earthhack.impl.util.render.mutables.BBRender;
 import me.earth.earthhack.impl.util.render.mutables.MutableBB;
 import net.minecraft.client.Minecraft;
@@ -121,6 +122,15 @@ final class ListenerRender extends ModuleListener<AutoCrystal, Render3DEvent> {
 
             if (module.fade.getValue()) {
                 fadeList.put(pos, System.currentTimeMillis());
+            }
+        }
+
+        if (module.render.getValue() && module.jelloRender.getValue())
+        {
+            EntityPlayer target = module.getTarget();
+            if (target != null) {
+                JelloRender.jelloRender(target, module.jelloColor.getValue());
+
             }
         }
 

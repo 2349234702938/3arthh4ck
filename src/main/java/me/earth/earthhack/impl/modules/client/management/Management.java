@@ -10,42 +10,47 @@ import me.earth.earthhack.api.setting.settings.BooleanSetting;
 import me.earth.earthhack.api.setting.settings.ColorSetting;
 import me.earth.earthhack.api.setting.settings.EnumSetting;
 import me.earth.earthhack.api.setting.settings.NumberSetting;
+import me.earth.earthhack.impl.event.events.render.Render2DEvent;
+import me.earth.earthhack.impl.event.listeners.LambdaListener;
 import me.earth.earthhack.impl.managers.Managers;
 import me.earth.earthhack.impl.util.minecraft.CooldownBypass;
 import me.earth.earthhack.impl.util.text.ChatUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import org.lwjgl.opengl.Display;
 
 import java.awt.*;
+
+import static me.earth.earthhack.impl.Earthhack.STARTING_FPS;
 
 /**
  * {@link me.earth.earthhack.impl.core.mixins.util.MixinScreenShotHelper}
  * {@link me.earth.earthhack.forge.mixins.minecraftforge.MixinGameData}
  */
-public class Management extends Module
-{
+public class Management extends Module {
     protected final Setting<Boolean> clear =
-        register(new BooleanSetting("ClearPops", false));
+            register(new BooleanSetting("ClearPops", false));
     protected final Setting<Boolean> logout =
-        register(new BooleanSetting("LogoutPops", false));
+            register(new BooleanSetting("LogoutPops", false));
     protected final Setting<Boolean> friend =
-        register(new BooleanSetting("SelfFriend", true));
+            register(new BooleanSetting("SelfFriend", true));
     protected final Setting<Boolean> soundRemove =
-        register(new BooleanSetting("SoundRemove", true));
+            register(new BooleanSetting("SoundRemove", true));
     protected final Setting<Integer> deathTime =
-        register(new NumberSetting<>("DeathTime", 250, 0, 1000));
+            register(new NumberSetting<>("DeathTime", 250, 0, 1000));
     protected final Setting<Integer> time =
-        register(new NumberSetting<>("Time", 0, 0, 24000));
+            register(new NumberSetting<>("Time", 0, 0, 24000));
     protected final Setting<Boolean> aspectRatio =
-        register(new BooleanSetting("ChangeAspectRatio", false));
+            register(new BooleanSetting("ChangeAspectRatio", false));
     protected final Setting<Integer> aspectRatioWidth =
-        register(new NumberSetting<>("AspectRatioWidth", mc.displayWidth, 0, mc.displayWidth));
+            register(new NumberSetting<>("AspectRatioWidth", mc.displayWidth, 0, mc.displayWidth));
     protected final Setting<Integer> aspectRatioHeight =
-        register(new NumberSetting<>("AspectRatioHeight", mc.displayHeight, 0, mc.displayHeight));
+            register(new NumberSetting<>("AspectRatioHeight", mc.displayHeight, 0, mc.displayHeight));
     protected final Setting<Boolean> pooledScreenShots =
-        register(new BooleanSetting("Pooled-Screenshots", false));
+            register(new BooleanSetting("Pooled-Screenshots", false));
     protected final Setting<Boolean> pauseOnLeftFocus =
-        register(new BooleanSetting("PauseOnLeftFocus",
-                                     mc.gameSettings.pauseOnLostFocus));
+            register(new BooleanSetting("PauseOnLeftFocus",
+                    mc.gameSettings.pauseOnLostFocus));
     protected final Setting<Boolean> customFogColor =
             register(new BooleanSetting("CustomFogColor", false));
     protected final Setting<Color> fogColor =
@@ -53,16 +58,17 @@ public class Management extends Module
     protected final Setting<Boolean> resourceDebug =
             register(new BooleanSetting("ResourceDebug", false)); // TODO:
     protected final Setting<Integer> unfocusedFps =
-            register(new NumberSetting<>("UnfocusedFps", 30, 1, 1000));
+            register(new NumberSetting<>("UnfocusedFps", 30, 0, 300));
     protected final Setting<CooldownBypass> globalCooldownBypass =
-            register(new EnumSetting<>("Global-CD-Bypass",
-                                       CooldownBypass.None));
+            register(new EnumSetting<>("Global-CD-Bypass", CooldownBypass.None));
     protected final Setting<CooldownBypass> manualCooldownBypass =
-            register(new EnumSetting<>("Manual-CD-Bypass",
-                                        CooldownBypass.None));
+            register(new EnumSetting<>("Manual-CD-Bypass", CooldownBypass.None));
+    public final Setting<Boolean> icon =
+            register(new BooleanSetting("GameIcon", true));
 
     protected GameProfile lastProfile;
     protected EntityPlayerSP player;
+
 
     public Management()
     {
@@ -82,7 +88,7 @@ public class Management extends Module
             .setComplexity(Complexity.Expert);
         register(new BooleanSetting("PB-FixChunks", false))
             .setComplexity(Complexity.Expert);
-        register(new BooleanSetting("1.19-Place", false));
+        register(new BooleanSetting("IgnoreForgeRegistries", false));
 
         this.setData(new ManagementData(this));
         this.clear.addObserver(event ->
@@ -93,7 +99,15 @@ public class Management extends Module
         });
         this.pauseOnLeftFocus.addObserver(e ->
             mc.gameSettings.pauseOnLostFocus = e.getValue());
-        register(new BooleanSetting("IgnoreForgeRegistries", false));
+
+        if (unfocusedFps.getValue() != 0) {
+            this.listeners.add(new LambdaListener<>(Render2DEvent.class, e -> {
+                if (!Display.isActive())
+                    Minecraft.getMinecraft().gameSettings.limitFramerate = unfocusedFps.getValue();
+                else
+                    Minecraft.getMinecraft().gameSettings.limitFramerate = STARTING_FPS;
+            }));
+        }
     }
 
     @Override

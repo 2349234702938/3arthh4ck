@@ -1,7 +1,6 @@
 package me.earth.earthhack.impl.modules.movement.speed;
 
 import me.earth.earthhack.api.cache.ModuleCache;
-import me.earth.earthhack.api.event.events.Stage;
 import me.earth.earthhack.impl.event.events.network.MotionUpdateEvent;
 import me.earth.earthhack.impl.event.listeners.ModuleListener;
 import me.earth.earthhack.impl.modules.Caches;
@@ -9,7 +8,6 @@ import me.earth.earthhack.impl.modules.movement.packetfly.PacketFly;
 import me.earth.earthhack.impl.modules.player.freecam.Freecam;
 import me.earth.earthhack.impl.util.math.position.PositionUtil;
 import me.earth.earthhack.impl.util.minecraft.MovementUtil;
-import me.earth.earthhack.impl.util.minecraft.PlayerUtil;
 
 final class ListenerMotion extends ModuleListener<Speed, MotionUpdateEvent>
 {
@@ -30,12 +28,11 @@ final class ListenerMotion extends ModuleListener<Speed, MotionUpdateEvent>
         {
             return;
         }
-
         if (MovementUtil.noMovementKeys())
         {
             mc.player.motionX = 0.0;
             mc.player.motionZ = 0.0;
-        }
+        }      
 
         if (module.mode.getValue() == SpeedMode.OldGround) {
 

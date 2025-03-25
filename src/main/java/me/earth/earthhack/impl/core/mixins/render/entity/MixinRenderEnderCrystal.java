@@ -164,6 +164,7 @@ public abstract class MixinRenderEnderCrystal
                                             entity.posZ);
         }
 
+
         super.doRender(entity, x, y, z, entityYaw, partialTicks);
     }
 

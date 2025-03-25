@@ -15,6 +15,7 @@ import me.earth.earthhack.impl.modules.client.autoconfig.AutoConfig;
 import me.earth.earthhack.impl.modules.client.clickgui.ClickGui;
 import me.earth.earthhack.impl.modules.client.colors.Colors;
 import me.earth.earthhack.impl.modules.client.commands.Commands;
+import me.earth.earthhack.impl.modules.client.compatibility.Compatibility;
 import me.earth.earthhack.impl.modules.client.configs.ConfigModule;
 import me.earth.earthhack.impl.modules.client.customfont.FontMod;
 import me.earth.earthhack.impl.modules.client.debug.Debug;
@@ -23,14 +24,16 @@ import me.earth.earthhack.impl.modules.client.management.Management;
 import me.earth.earthhack.impl.modules.client.media.Media;
 import me.earth.earthhack.impl.modules.client.nospoof.NoSpoof;
 import me.earth.earthhack.impl.modules.client.notifications.Notifications;
+import me.earth.earthhack.impl.modules.client.notificationsTTS.NotificationsTTS;
 import me.earth.earthhack.impl.modules.client.pbgui.PbGui;
 import me.earth.earthhack.impl.modules.client.pbteleport.PbTeleport;
 import me.earth.earthhack.impl.modules.client.pingbypass.PingBypassModule;
-import me.earth.earthhack.impl.modules.client.rotationbypass.Compatibility;
+import me.earth.earthhack.impl.modules.client.rpc.RPC;
 import me.earth.earthhack.impl.modules.client.safety.Safety;
 import me.earth.earthhack.impl.modules.client.server.ServerModule;
 import me.earth.earthhack.impl.modules.client.settings.SettingsModule;
 import me.earth.earthhack.impl.modules.client.tab.TabModule;
+import me.earth.earthhack.impl.modules.client.xcrash.XCrash;
 import me.earth.earthhack.impl.modules.combat.antisurround.AntiSurround;
 import me.earth.earthhack.impl.modules.combat.antitrap.AntiTrap;
 import me.earth.earthhack.impl.modules.combat.anvilaura.AnvilAura;
@@ -39,15 +42,17 @@ import me.earth.earthhack.impl.modules.combat.autocrystal.AutoCrystal;
 import me.earth.earthhack.impl.modules.combat.autothirtytwok.Auto32k;
 import me.earth.earthhack.impl.modules.combat.autotrap.AutoTrap;
 import me.earth.earthhack.impl.modules.combat.bedbomb.BedBomb;
-import me.earth.earthhack.impl.modules.combat.bomber.CrystalBomber;
+import me.earth.earthhack.impl.modules.combat.blocker.Blocker;
 import me.earth.earthhack.impl.modules.combat.bowkill.BowKiller;
 import me.earth.earthhack.impl.modules.combat.bowspam.BowSpam;
+import me.earth.earthhack.impl.modules.combat.cevbreaker.CevBreaker;
 import me.earth.earthhack.impl.modules.combat.criticals.Criticals;
 import me.earth.earthhack.impl.modules.combat.holefiller.HoleFiller;
 import me.earth.earthhack.impl.modules.combat.killaura.KillAura;
 import me.earth.earthhack.impl.modules.combat.legswitch.LegSwitch;
 import me.earth.earthhack.impl.modules.combat.offhand.Offhand;
 import me.earth.earthhack.impl.modules.combat.pistonaura.PistonAura;
+import me.earth.earthhack.impl.modules.combat.quiver.Quiver;
 import me.earth.earthhack.impl.modules.combat.selftrap.SelfTrap;
 import me.earth.earthhack.impl.modules.combat.snowballer.Snowballer;
 import me.earth.earthhack.impl.modules.combat.surround.Surround;
@@ -57,7 +62,6 @@ import me.earth.earthhack.impl.modules.misc.antiaim.AntiAim;
 import me.earth.earthhack.impl.modules.misc.antipackets.AntiPackets;
 import me.earth.earthhack.impl.modules.misc.antipotion.AntiPotion;
 import me.earth.earthhack.impl.modules.misc.antivanish.AntiVanish;
-import me.earth.earthhack.impl.modules.misc.autocraft.AutoCraft;
 import me.earth.earthhack.impl.modules.misc.autoeat.AutoEat;
 import me.earth.earthhack.impl.modules.misc.autofish.AutoFish;
 import me.earth.earthhack.impl.modules.misc.autolog.AutoLog;
@@ -80,20 +84,18 @@ import me.earth.earthhack.impl.modules.misc.packetdelay.PacketDelay;
 import me.earth.earthhack.impl.modules.misc.packets.Packets;
 import me.earth.earthhack.impl.modules.misc.pingspoof.PingSpoof;
 import me.earth.earthhack.impl.modules.misc.portals.Portals;
-import me.earth.earthhack.impl.modules.misc.rpc.RPC;
 import me.earth.earthhack.impl.modules.misc.settingspoof.SettingSpoof;
 import me.earth.earthhack.impl.modules.misc.skinblink.SkinBlink;
 import me.earth.earthhack.impl.modules.misc.spammer.Spammer;
 import me.earth.earthhack.impl.modules.misc.tooltips.ToolTips;
-import me.earth.earthhack.impl.modules.misc.tpssync.TpsSync;
 import me.earth.earthhack.impl.modules.misc.tracker.Tracker;
-import me.earth.earthhack.impl.modules.misc.truedurability.TrueDurability;
 import me.earth.earthhack.impl.modules.movement.anchor.Anchor;
 import me.earth.earthhack.impl.modules.movement.antimove.NoMove;
 import me.earth.earthhack.impl.modules.movement.autosprint.AutoSprint;
 import me.earth.earthhack.impl.modules.movement.avoid.Avoid;
 import me.earth.earthhack.impl.modules.movement.blocklag.BlockLag;
 import me.earth.earthhack.impl.modules.movement.boatfly.BoatFly;
+import me.earth.earthhack.impl.modules.movement.clip.Clip;
 import me.earth.earthhack.impl.modules.movement.elytraflight.ElytraFlight;
 import me.earth.earthhack.impl.modules.movement.entitycontrol.EntityControl;
 import me.earth.earthhack.impl.modules.movement.entityspeed.EntitySpeed;
@@ -114,7 +116,6 @@ import me.earth.earthhack.impl.modules.movement.stairs.Stairs;
 import me.earth.earthhack.impl.modules.movement.step.Step;
 import me.earth.earthhack.impl.modules.movement.tickshift.TickShift;
 import me.earth.earthhack.impl.modules.movement.velocity.Velocity;
-import me.earth.earthhack.impl.modules.player.arrows.Arrows;
 import me.earth.earthhack.impl.modules.player.automine.AutoMine;
 import me.earth.earthhack.impl.modules.player.autotool.AutoTool;
 import me.earth.earthhack.impl.modules.player.blink.Blink;
@@ -133,6 +134,7 @@ import me.earth.earthhack.impl.modules.player.noglitchblocks.NoGlitchBlocks;
 import me.earth.earthhack.impl.modules.player.nohunger.NoHunger;
 import me.earth.earthhack.impl.modules.player.noinventorydesync.InventorySync;
 import me.earth.earthhack.impl.modules.player.norotate.NoRotate;
+import me.earth.earthhack.impl.modules.player.pearlphase.PearlPhase;
 import me.earth.earthhack.impl.modules.player.raytrace.RayTrace;
 import me.earth.earthhack.impl.modules.player.reach.Reach;
 import me.earth.earthhack.impl.modules.player.replenish.Replenish;
@@ -141,13 +143,16 @@ import me.earth.earthhack.impl.modules.player.sorter.Sorter;
 import me.earth.earthhack.impl.modules.player.spectate.Spectate;
 import me.earth.earthhack.impl.modules.player.speedmine.Speedmine;
 import me.earth.earthhack.impl.modules.player.suicide.Suicide;
+import me.earth.earthhack.impl.modules.player.swing.Swing;
 import me.earth.earthhack.impl.modules.player.timer.Timer;
+import me.earth.earthhack.impl.modules.player.tpssync.TpsSync;
+import me.earth.earthhack.impl.modules.player.truedurability.TrueDurability;
 import me.earth.earthhack.impl.modules.player.xcarry.XCarry;
 import me.earth.earthhack.impl.modules.render.ambience.Ambience;
 import me.earth.earthhack.impl.modules.render.blockhighlight.BlockHighlight;
 import me.earth.earthhack.impl.modules.render.breadcrumbs.BreadCrumbs;
 import me.earth.earthhack.impl.modules.render.chams.Chams;
-import me.earth.earthhack.impl.modules.render.crosshair.Crosshair;
+import me.earth.earthhack.impl.modules.render.crosshair.CrossHair;
 import me.earth.earthhack.impl.modules.render.crystalchams.CrystalChams;
 import me.earth.earthhack.impl.modules.render.crystalscale.CrystalScale;
 import me.earth.earthhack.impl.modules.render.esp.ESP;
@@ -162,10 +167,12 @@ import me.earth.earthhack.impl.modules.render.newchunks.NewChunks;
 import me.earth.earthhack.impl.modules.render.norender.NoRender;
 import me.earth.earthhack.impl.modules.render.penis.Penis;
 import me.earth.earthhack.impl.modules.render.popchams.PopChams;
+import me.earth.earthhack.impl.modules.render.pvpresources.PvpResources;
 import me.earth.earthhack.impl.modules.render.rainbowenchant.RainbowEnchant;
 import me.earth.earthhack.impl.modules.render.search.Search;
 import me.earth.earthhack.impl.modules.render.skeleton.Skeleton;
 import me.earth.earthhack.impl.modules.render.sounds.Sounds;
+import me.earth.earthhack.impl.modules.render.targethud.TargetHud;
 import me.earth.earthhack.impl.modules.render.tracers.Tracers;
 import me.earth.earthhack.impl.modules.render.trails.Trails;
 import me.earth.earthhack.impl.modules.render.trajectories.Trajectories;
@@ -175,7 +182,6 @@ import me.earth.earthhack.impl.modules.render.voidesp.VoidESP;
 import me.earth.earthhack.impl.modules.render.waypoints.WayPoints;
 import me.earth.earthhack.impl.modules.render.weather.Weather;
 import me.earth.earthhack.impl.modules.render.xray.XRay;
-import me.earth.earthhack.vanilla.Environment;
 
 import java.util.ArrayList;
 
@@ -184,6 +190,8 @@ public class ModuleManager extends IterationRegister<Module>
     public void init()
     {
         Earthhack.getLogger().info("Initializing Modules.");
+
+        //client
         this.forceRegister(new AccountSpoof());
         this.forceRegister(new AntiCheat());
         this.forceRegister(new AutoConfig());
@@ -197,6 +205,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Management());
         this.forceRegister(new NoSpoof());
         this.forceRegister(new Notifications());
+        this.forceRegister(new NotificationsTTS());
         this.forceRegister(new Compatibility());
         this.forceRegister(new Safety());
         this.forceRegister(new ServerModule());
@@ -205,7 +214,9 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new SettingsModule());
         this.forceRegister(new TabModule());
         this.forceRegister(new Media());
+        this.forceRegister(new XCrash());
 
+        //combat
         this.forceRegister(new AntiSurround());
         this.forceRegister(new AntiTrap());
         this.forceRegister(new Auto32k());
@@ -215,19 +226,22 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoTrap());
         this.forceRegister(new BedBomb());
         this.forceRegister(new BowSpam());
+        this.forceRegister(new Blocker());
         this.forceRegister(new BowKiller());
         this.forceRegister(new Criticals());
-        this.forceRegister(new CrystalBomber());
+        this.forceRegister(new CevBreaker());
         this.forceRegister(new HoleFiller());
         this.forceRegister(new KillAura());
         this.forceRegister(new LegSwitch());
         this.forceRegister(new Offhand());
         this.forceRegister(new PistonAura());
+        this.forceRegister(new Quiver());
         this.forceRegister(new Surround());
         this.forceRegister(new Snowballer());
         this.forceRegister(new SelfTrap());
         this.forceRegister(new WebAura());
 
+        //misc
         this.forceRegister(new Announcer());
         this.forceRegister(new AntiAim());
         this.forceRegister(new AntiPackets());
@@ -240,6 +254,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new AutoRespawn());
         this.forceRegister(new BuildHeight());
         this.forceRegister(new Chat());
+        // this.forceRegister(new ChorusControl()); // TODO Rewrite
         this.forceRegister(new ExtraTab());
         this.forceRegister(new Logger());
         this.forceRegister(new MCF());
@@ -261,19 +276,22 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Tracker());
         this.forceRegister(new TrueDurability());
 
+        /*
         if (Environment.hasForge()) {
             this.forceRegister(new AutoCraft());
         }
-
+        */
         this.forceRegister(new AutoRegear());
         this.forceRegister(new PacketDelay());
         this.forceRegister(new RPC());
 
+        //movement
         this.forceRegister(new Anchor());
         this.forceRegister(new AutoSprint());
         this.forceRegister(new Avoid());
         this.forceRegister(new BlockLag());
         this.forceRegister(new BoatFly());
+        this.forceRegister(new Clip());
         this.forceRegister(new ElytraFlight());
         this.forceRegister(new EntityControl());
         this.forceRegister(new EntitySpeed());
@@ -296,6 +314,7 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new TickShift());
         this.forceRegister(new Velocity());
 
+        //player
         this.forceRegister(new AutoMine());
         this.forceRegister(new AutoTool());
         this.forceRegister(new Blink());
@@ -314,7 +333,6 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new NoHunger());
         this.forceRegister(new InventorySync());
         this.forceRegister(new NoRotate());
-        this.forceRegister(new Arrows());
         this.forceRegister(new RayTrace());
         this.forceRegister(new Reach());
         this.forceRegister(new Replenish());
@@ -323,9 +341,12 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Spectate());
         this.forceRegister(new Speedmine());
         this.forceRegister(new Suicide());
+        this.forceRegister(new Swing());
         this.forceRegister(new Timer());
         this.forceRegister(new XCarry());
+        this.forceRegister(new PearlPhase());
 
+        //render
         this.forceRegister(new BlockHighlight());
         this.forceRegister(new BreadCrumbs());
         this.forceRegister(new Chams());
@@ -351,13 +372,15 @@ public class ModuleManager extends IterationRegister<Module>
         this.forceRegister(new Penis());
         this.forceRegister(new WayPoints());
         this.forceRegister(new Weather());
+        this.forceRegister(new PvpResources());
         this.forceRegister(new HandChams());
         this.forceRegister(new CrystalChams());
         this.forceRegister(new RainbowEnchant());
-        this.forceRegister(new Crosshair());
+        this.forceRegister(new CrossHair());
         this.forceRegister(new PopChams());
         this.forceRegister(new ItemChams());
         this.forceRegister(new Ambience());
+        this.forceRegister(new TargetHud());
 
         this.forceRegister(new PingBypassModule());
 
@@ -377,12 +400,14 @@ public class ModuleManager extends IterationRegister<Module>
     public void unregister(Module module) throws CantUnregisterException
     {
         super.unregister(module);
+        module.setRegistered(false);
         Bus.EVENT_BUS.unsubscribe(module);
     }
 
     protected void forceRegister(Module module)
     {
         registered.add(module);
+        module.setRegistered(true);
         if (module instanceof Registrable)
         {
             ((Registrable) module).onRegister();
@@ -397,3 +422,4 @@ public class ModuleManager extends IterationRegister<Module>
         return iModules;
     }
 }
+

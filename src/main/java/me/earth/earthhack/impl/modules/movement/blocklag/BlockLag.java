@@ -9,9 +9,11 @@ import me.earth.earthhack.api.setting.settings.EnumSetting;
 import me.earth.earthhack.api.setting.settings.NumberSetting;
 import me.earth.earthhack.impl.gui.visibility.PageBuilder;
 import me.earth.earthhack.impl.gui.visibility.Visibilities;
+import me.earth.earthhack.impl.managers.Managers;
 import me.earth.earthhack.impl.modules.Caches;
 import me.earth.earthhack.impl.modules.movement.blocklag.mode.BlockLagStage;
 import me.earth.earthhack.impl.modules.movement.blocklag.mode.OffsetMode;
+import me.earth.earthhack.impl.modules.player.blink.Blink;
 import me.earth.earthhack.impl.modules.player.freecam.Freecam;
 import me.earth.earthhack.impl.util.helpers.blocks.modes.Pop;
 import me.earth.earthhack.impl.util.helpers.disabling.DisablingModule;
@@ -20,6 +22,7 @@ import me.earth.earthhack.impl.util.math.position.PositionUtil;
 import me.earth.earthhack.impl.util.minecraft.InventoryUtil;
 import me.earth.earthhack.impl.util.minecraft.Swing;
 import me.earth.earthhack.impl.util.network.NetworkUtil;
+import me.earth.earthhack.impl.util.text.ChatIDs;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -33,14 +36,15 @@ public class BlockLag extends DisablingModule
 {
     protected static final ModuleCache<Freecam> FREECAM =
             Caches.getModule(Freecam.class);
-
+    static final ModuleCache<Blink> BLINK =
+            Caches.getModule(Blink.class);
     protected final Setting<BlockLagPages> pages =
             register(new EnumSetting<>("Page", BlockLagPages.Offsets));
-
+    // --------------------- OFFSETS --------------------- //
     protected final Setting<OffsetMode> offsetMode =
             register(new EnumSetting<>("Mode", OffsetMode.Smart));
     protected final Setting<Double> vClip =
-            register(new NumberSetting<>("V-Clip", -9.0, -256.0, 256.0));
+            register(new NumberSetting<>("V-Clip", -9.0, -20.0, 20.0)); // old one was 256 range
     protected final Setting<Double> minDown =
             register(new NumberSetting<>("Min-Down", 3.0, 0.0, 1337.0));
     protected final Setting<Double> maxDown =
@@ -60,6 +64,7 @@ public class BlockLag extends DisablingModule
     protected final Setting<Boolean> discrete =
             register(new BooleanSetting("Discrete", true));
 
+    // --------------------- ROTATIONS --------------------- //
     protected final Setting<Boolean> rotate =
             register(new BooleanSetting("Rotate", false));
     protected final Setting<Boolean> anvil =
@@ -94,7 +99,7 @@ public class BlockLag extends DisablingModule
             register(new EnumSetting<>("Stage", BlockLagStage.All));
     protected final Setting<Boolean> deltaY =
             register(new BooleanSetting("Delta-Y", true));
-
+    // --------------------- ATTACK, POP --------------------- //
     protected final Setting<Boolean> attack =
             register(new BooleanSetting("Attack", false));
     protected final Setting<Boolean> instantAttack =
@@ -109,7 +114,7 @@ public class BlockLag extends DisablingModule
             register(new NumberSetting<>("Pop-Time", 500, 0, 500));
     protected final Setting<Integer> cooldown =
             register(new NumberSetting<>("Cooldown", 500, 0, 500));
-
+    // --------------- EXPLOSION, VELOCITY, SCALE --------------- //
     protected final Setting<Boolean> scaleExplosion =
             register(new BooleanSetting("Scale-Explosion", false));
     protected final Setting<Boolean> scaleVelocity =
@@ -121,16 +126,63 @@ public class BlockLag extends DisablingModule
     protected final Setting<Double> scaleFactor =
             register(new NumberSetting<>("Scale-Factor", 1.0, 0.1, 10.0));
 
+    // --------------- BYPASS --------------- //
+    protected final Setting<Float> motionAmount =
+            register(new NumberSetting<>("Motion-Amount", 60f, 0.1f, 1337.0f));
+    protected final Setting<Boolean> motionNegate =
+            register(new BooleanSetting("Motion-Negate", false));
+    protected final Setting<Float> negateAmount =
+            register(new NumberSetting<>("Negate-Amount", -120f, 0.1f, -1337.0f));
+    protected final Setting<Boolean> useBlink =
+            register(new BooleanSetting("UseBlink", true));
+    protected final Setting<Boolean> autoDisableBlink =
+            register(new BooleanSetting("AutoDisable", false));
+    protected final Setting<Integer> blinkDuration =
+            register(new NumberSetting<>("Blink-Duration", 650, 0, 5000));
+    protected final Setting<Boolean> useTimer =
+            register(new BooleanSetting("UseTimer", false));
+    protected final Setting<Float> timerAmount =
+            register(new NumberSetting<>("Timer-Speed", 6.0f, 0.1f, 30.0f));
+    // --------------- NEW SMART --------------- //
+    protected final Setting<Float> smartRange =
+            register(new NumberSetting<>("Range", 3.0f, 0.0f, 10.0f));
+    protected  final Setting<Boolean> turnoff =
+            register(new BooleanSetting("Auto-Off", false));
+    protected  final Setting<Boolean> holeOnly =
+            register(new BooleanSetting("OnlyHoles", false));
+    protected  final Setting<Boolean> onTeleport =
+            register(new BooleanSetting("OnTeleport", false));
+    protected  final Setting<Boolean> chorusDisable =
+            register(new BooleanSetting("DisableTP", false));
+    protected final Setting<Integer> smartDelay =
+            register(new NumberSetting<>("Delay", 100, 0, 1000));
+
+
     protected final StopWatch scaleTimer = new StopWatch();
     protected final StopWatch timer = new StopWatch();
+    protected final StopWatch blinkTimer = new StopWatch();
+    protected final StopWatch jumpTimer = new StopWatch();
     protected double motionY;
     protected BlockPos startPos;
+
+    // Implemented for mode SmartNew by xyzbtw
+    protected final StopWatch delayTimer = new StopWatch();
+    public boolean blockTeleporting;
+    protected boolean ateChorus = false;
+
+    protected EntityPlayer target;
+    protected BlockPos pos;
 
     public BlockLag()
     {
         super("BlockLag", Category.Movement);
         this.setData(new BlockLagData(this));
         this.listeners.add(new ListenerMotion(this));
+
+        this.listeners.add(new ListenerTick(this));
+        this.listeners.add(new ListenerTeleport(this));
+        this.listeners.add(new ListenerEat(this));
+
         Bus.EVENT_BUS.register(new ListenerVelocity(this));
         Bus.EVENT_BUS.register(new ListenerExplosion(this));
         Bus.EVENT_BUS.register(new ListenerSpawnObject(this));
@@ -140,25 +192,47 @@ public class BlockLag extends DisablingModule
             .addPage(v -> v == BlockLagPages.Misc, rotate, deltaY)
             .addPage(v -> v == BlockLagPages.Attack, attack, cooldown)
             .addPage(v -> v == BlockLagPages.Scale, scaleExplosion, scaleFactor)
+            .addPage(v -> v == BlockLagPages.Bypass, motionAmount, timerAmount)
+            .addPage(v -> v == BlockLagPages.Smart, smartRange, smartDelay)
             .register(Visibilities.VISIBILITY_MANAGER);
     }
 
     @Override
     protected void onEnable()
     {
+        if(offsetMode.getValue() == OffsetMode.SmartNew)
+        {
+            delayTimer.setTime(0);
+
+            if(mc.isSingleplayer()) {
+                Managers.CHAT.sendDeleteMessage("You cannot use BlockLag with mode SmartNew in local worlds. Sorry!", getName(), ChatIDs.MODULE);
+                this.disable();
+            }
+            target = null;
+        }
+
+
         timer.setTime(0);
+        jumpTimer.reset();
+        blinkTimer.reset();
+
+        if(jumpTimer.passed(295))
+            blinkTimer.reset();
+
+        if (useTimer.getValue())
+            Managers.TIMER.setTimer(timerAmount.getValue());
+
         super.onEnable();
         if (mc.world == null || mc.player == null)
-        {
             return;
-        }
 
         startPos = getPlayerPos();
         if (singlePlayerCheck(startPos))
-        {
             this.disable();
-        }
     }
+
+
+
 
     protected void attack(Packet<?> attacking, int slot) {
         if (slot != -1) {
@@ -304,5 +378,16 @@ public class BlockLag extends DisablingModule
         }
 
         return false;
+    }
+
+    protected void onDisable(){
+        super.onDisable();
+        ateChorus = false;
+        Managers.TIMER.setTimer(1);
+        blinkTimer.reset();
+        jumpTimer.reset();
+        if(blinkTimer.passed(blinkDuration.getValue()) && autoDisableBlink.getValue())
+            BLINK.disable();
+
     }
 }

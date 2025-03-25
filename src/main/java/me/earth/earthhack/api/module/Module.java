@@ -37,6 +37,7 @@ public abstract class Module extends SettingContainer
     protected final List<Listener<?>> listeners = new ArrayList<>();
     private final AtomicBoolean enableCheck = new AtomicBoolean();
     private final AtomicBoolean inOnEnable  = new AtomicBoolean();
+    boolean registered;
 
     private final Setting<String> name;
     private final Setting<Bind> bind =
@@ -61,8 +62,7 @@ public abstract class Module extends SettingContainer
      * @param name the name for the new module.
      * @param category the category of the new module.
      */
-    public Module(String name, Category category)
-    {
+    public Module(String name, Category category) {
         this.name = register(new StringSetting("Name", name))
             .setComplexity(Complexity.Medium);
         this.category = category;
@@ -72,18 +72,14 @@ public abstract class Module extends SettingContainer
 
     protected void onEnabledEvent(SettingEvent<Boolean> event) {
         if (event.isCancelled())
-        {
             return;
-        }
 
         enableCheck.set(event.getValue());
-        if (event.getValue() && !Bus.EVENT_BUS.isSubscribed(this))
-        {
+        if (event.getValue() && !Bus.EVENT_BUS.isSubscribed(this)) {
             inOnEnable.set(true);
             onEnable();
             inOnEnable.set(false);
-            if (enableCheck.get())
-            {
+            if (enableCheck.get()) {
                 Bus.EVENT_BUS.subscribe(this);
             }
         }
@@ -94,13 +90,20 @@ public abstract class Module extends SettingContainer
             onDisable();
         }
     }
-
+    /**
+     *
+     * @return the actual name for the module. (e.g. When display name is Aura, this would return KillAura.)
+     */
     @Override
     public String getName()
     {
         return name.getInitial();
     }
 
+    /**
+     *
+     * @return the display name for the module. This is user-set.
+     */
     @Override
     public String getDisplayName()
     {
@@ -113,38 +116,25 @@ public abstract class Module extends SettingContainer
         this.name.setValue(name);
     }
 
-    public final void toggle()
-    {
+    public final void toggle() {
         if (isEnabled())
-        {
             disable();
-        }
         else
-        {
             enable();
-        }
     }
 
-    public final void enable()
-    {
+    public final void enable() {
         if (!isEnabled())
-        {
             enabled.setValue(true);
-        }
     }
 
-    public final void disable()
-    {
+    public final void disable() {
         if (isEnabled())
-        {
             enabled.setValue(false);
-        }
     }
 
-    public final void load()
-    {
-        if (this.isEnabled() && !Bus.EVENT_BUS.isSubscribed(this))
-        {
+    public final void load() {
+        if (this.isEnabled() && !Bus.EVENT_BUS.isSubscribed(this)) {
             Bus.EVENT_BUS.subscribe(this);
         }
 
@@ -155,35 +145,49 @@ public abstract class Module extends SettingContainer
     {
         return enableCheck.get();
     }
-
+    /**
+     *
+     * @return the display info (Stuff in the ArrayList between [] brackets. (e.g. AutoCrystal [target].))
+     * This would return the target of the AutoCrystal, if this was used to check AutoCrystal's DisplayInfo.
+     */
     public String getDisplayInfo()
     {
         return null;
     }
-
+    /**
+     *
+     * @return the category of the module
+     */
     public Category getCategory()
     {
         return category;
     }
 
+    /**
+     *
+     * @return the description of the module.
+     */
     public ModuleData<?> getData()
     {
         return data;
     }
 
-    public void setData(ModuleData<?> data)
-    {
+    public void setData(ModuleData<?> data) {
         if (data != null)
-        {
             this.data = data;
-        }
     }
-
+    /**
+     *
+     * @return the key-bind for the module.
+     */
     public Bind getBind()
     {
         return bind.getValue();
     }
-
+    /**
+     *
+     * @param bind The key-bind we set for a module.
+     */
     public void setBind(Bind bind)
     {
         this.bind.setValue(bind);
@@ -199,7 +203,10 @@ public abstract class Module extends SettingContainer
     {
         this.hidden.setValue(hidden);
     }
-
+    /**
+     *
+     * @return whether the module is hidden in the Arraylist.
+     */
     @Override
     public Hidden isHidden()
     {
@@ -221,6 +228,20 @@ public abstract class Module extends SettingContainer
         /* Implemented by the module */
     }
 
+    public boolean isRegistered() {
+        return registered;
+    }
+
+    public void setRegistered(boolean value) {
+        registered = value;
+    }
+
+
+    /**
+     *
+     * @return the listeners the module is using.
+     * For example, for AutoCrystal this would return all its listeners, like ListenerDestroyBlock or ListenerExplosion.
+     */
     @Override
     public Collection<Listener<?>> getListeners()
     {
@@ -237,12 +258,10 @@ public abstract class Module extends SettingContainer
     @Override
     public boolean equals(Object o)
     {
-        if (o == this)
-        {
+        if (o == this) {
             return true;
         }
-        else if (o instanceof Module)
-        {
+        else if (o instanceof Module) {
             String name = this.name.getInitial();
             return name != null && name.equals(((Module) o).name.getInitial()) && this.getClass() == o.getClass();
         }

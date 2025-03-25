@@ -23,8 +23,8 @@ import java.util.Optional;
 public class RayTraceUtil implements Globals
 {
     private static final SettingCache
-        <Boolean, BooleanSetting, Management> NEW_PLACE =
-        Caches.getSetting(Management.class, BooleanSetting.class, "1.19-Place", false);
+            <Boolean, BooleanSetting, Management> NEW_PLACE =
+            Caches.getSetting(Management.class, BooleanSetting.class, "1.19-Place", false);
     /**
      * Produces a float array of length 3 representing
      * the needed facingX, facingY and facingZ for a

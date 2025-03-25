@@ -24,6 +24,7 @@ public class CategoryFrame extends ModulesFrame {
         getComponents().clear();
         float offsetY = getHeight() + 1;
         List<Module> moduleList = moduleManager.getModulesFromCategory(getModuleCategory());
+
         moduleList.sort(Comparator.comparing(Module::getName));
         for (Module module : moduleList) {
             getComponents().add(new ModuleComponent(module, getPosX(), getPosY(), 0, offsetY, getWidth(), 14));

@@ -5,6 +5,7 @@ import me.earth.earthhack.impl.event.events.movement.MoveEvent;
 import me.earth.earthhack.impl.managers.Managers;
 import me.earth.earthhack.impl.util.math.MathUtil;
 import me.earth.earthhack.impl.util.math.position.PositionUtil;
+import me.earth.earthhack.impl.util.minecraft.KeyBoardUtil;
 import me.earth.earthhack.impl.util.minecraft.MovementUtil;
 
 public enum SpeedMode implements Globals
@@ -14,6 +15,9 @@ public enum SpeedMode implements Globals
         @Override
         public void move(MoveEvent event, Speed module)
         {
+
+            if (module.sneakCheck.getValue())
+               if(mc.player.isSneaking() || KeyBoardUtil.isKeyDown(mc.gameSettings.keyBindSneak)) return;
             if (mc.player.isElytraFlying()) return;
             if (module.LONG_JUMP.isEnabled()) return;
             if (!module.noWaterInstant.getValue()

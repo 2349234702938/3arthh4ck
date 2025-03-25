@@ -5,5 +5,7 @@ public enum BlockLagPages
     Offsets,
     Misc,
     Attack,
-    Scale
+    Scale,
+    Bypass,
+    Smart
 }

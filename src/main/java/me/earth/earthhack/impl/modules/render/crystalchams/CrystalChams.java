@@ -20,23 +20,28 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class CrystalChams extends Module {
     public final Setting<ChamsMode> mode       =
-        register(new EnumSetting<>("Mode", ChamsMode.Normal));
+            register(new EnumSetting<>("Mode", ChamsMode.Normal));
     public final Setting<Boolean> chams        =
-        register(new BooleanSetting("Chams", false));
+            register(new BooleanSetting("Chams", false));
     public final Setting<Boolean> throughWalls =
-        register(new BooleanSetting("ThroughWalls", false));
+            register(new BooleanSetting("ThroughWalls", false));
     public final Setting<Boolean> wireframe    =
-        register(new BooleanSetting("Wireframe", false));
+            register(new BooleanSetting("Wireframe", false));
     public final Setting<Boolean> wireWalls    =
-        register(new BooleanSetting("WireThroughWalls", false));
+            register(new BooleanSetting("WireThroughWalls", false));
     public final Setting<Boolean> texture    =
-        register(new BooleanSetting("Texture", false));
+            register(new BooleanSetting("Texture", false));
     public final NumberSetting<Float> lineWidth =
-        register(new NumberSetting<>("LineWidth" , 1f , 0.1f , 4f));
+            register(new NumberSetting<>("LineWidth" , 1f , 0.1f , 4f));
     public final Setting<Color> color          =
-        register(new ColorSetting("Color", new Color(255, 255, 255, 255)));
+            register(new ColorSetting("Color", new Color(255, 255, 255, 255)));
     public final Setting<Color> wireFrameColor =
-        register(new ColorSetting("WireframeColor", new Color(255, 255, 255, 255)));
+            register(new ColorSetting("WireframeColor", new Color(255, 255, 255, 255)));
+    public final NumberSetting<Float> spinSpeed =
+            register(new NumberSetting<>("Spin-Speed", 1.0f, 0.1f, 100f));
+    public final NumberSetting<Float> bounceFactor =
+            register(new NumberSetting<>("Bounce-Factor", 1.0f, 0.0f, 100f));
+    
 
     public CrystalChams() {
         super("CrystalChams", Category.Render);
@@ -52,8 +57,8 @@ public class CrystalChams extends Module {
                 glDisable(GL_TEXTURE_2D);
                 float alpha = color.getValue().getAlpha() / 255.0f;
                 glColor4f(1.0f, 1.0f, 1.0f, alpha);
-                e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount(),
-                                    e.getAgeInTicks(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
+                e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount() * spinSpeed.getValue(),
+                        e.getAgeInTicks() * bounceFactor.getValue(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
                 glEnable(GL_TEXTURE_2D);
 
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -75,7 +80,8 @@ public class CrystalChams extends Module {
                     GlStateManager.rotate(30.0F - (float)i * 60.0F, 0.0F, 0.0F, 0.5F);
                     GlStateManager.translate(0.0F, f * (0.001F + (float)i * 0.003F) * 20.0F, 0.0F);
                     GlStateManager.matrixMode(5888);
-                    e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount(), e.getAgeInTicks(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
+                    e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount() * spinSpeed.getValue(),
+                            e.getAgeInTicks() * bounceFactor.getValue(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
                 }
 
                 GlStateManager.matrixMode(5890);
@@ -106,8 +112,8 @@ public class CrystalChams extends Module {
                               wireColor.getGreen() / 255.0f,
                               wireColor.getBlue() / 255.0f,
                               wireColor.getAlpha() / 255.0f);
-                    e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount(),
-                                        e.getAgeInTicks(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
+                    e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount() * spinSpeed.getValue(),
+                            e.getAgeInTicks() * bounceFactor.getValue(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
                     glPopAttrib();
                 }
 
@@ -129,8 +135,8 @@ public class CrystalChams extends Module {
                               chamsColor.getGreen() / 255.0f,
                               chamsColor.getBlue() / 255.0f,
                               chamsColor.getAlpha() / 255.0f);
-                    e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount(),
-                                        e.getAgeInTicks(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
+                    e.getModel().render(e.getEntity(), e.getLimbSwing(), e.getLimbSwingAmount() * spinSpeed.getValue(),
+                                        e.getAgeInTicks() * bounceFactor.getValue(), e.getNetHeadYaw(), e.getHeadPitch(), e.getScale());
                     glPopAttrib();
                 }
             }

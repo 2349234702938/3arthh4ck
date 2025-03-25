@@ -407,7 +407,7 @@ public class AutoArmor extends Module
     /**
      * Returns <tt>false</tt> if autoMend is off,
      * we are not holding Bottles of experience, we are
-     * not using them, or theres a dangerous
+     * not using them, or there's a dangerous
      * position/crystal that could kill or deal
      * big damage to us in proximity.
      *

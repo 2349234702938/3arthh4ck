@@ -17,6 +17,7 @@ import me.earth.earthhack.impl.managers.Managers;
 import me.earth.earthhack.impl.managers.client.ModuleManager;
 import me.earth.earthhack.impl.modules.Caches;
 import me.earth.earthhack.impl.modules.client.clickgui.ClickGui;
+import me.earth.earthhack.impl.modules.client.colors.Colors;
 import me.earth.earthhack.impl.modules.client.commands.Commands;
 import me.earth.earthhack.impl.util.render.Render2DUtil;
 import me.earth.earthhack.pingbypass.modules.SyncModule;
@@ -28,22 +29,21 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.opengl.GL11;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class Click extends GuiScreen {
     public static final ModuleCache<ClickGui> CLICK_GUI = Caches.getModule(ClickGui.class);
+    public static final ModuleCache<Colors> COLOR_MODULE = Caches.getModule(Colors.class);
 
     private static final SettingCache<Boolean, BooleanSetting, Commands> BACK =
             Caches.getSetting(Commands.class, BooleanSetting.class, "BackgroundGui", false);
     private static final ResourceLocation BLACK_PNG =
             new ResourceLocation("earthhack:textures/gui/black.png");
-
-    public static DescriptionFrame descriptionFrame =
-            new DescriptionFrame(0, 0, 200, 16);
-
     private final ArrayList<Frame> frames = new ArrayList<>();
     private Category[] categories = Category.values();
     private final ModuleManager moduleManager;
@@ -53,6 +53,9 @@ public class Click extends GuiScreen {
     private boolean pingBypass;
 
     public final GuiScreen screen;
+
+    public static DescriptionFrame descriptionFrame =
+            new DescriptionFrame(0, 0, 200, 18); // moved this here, so it's possible to use all the variables above in the future
 
     public Click(GuiScreen screen) {
         this.moduleManager = Managers.MODULES;
@@ -65,8 +68,7 @@ public class Click extends GuiScreen {
     }
 
     public void init() {
-        if (!attached)
-        {
+        if (!attached) {
             CLICK_GUI.get().descriptionWidth.addObserver(e -> descriptionFrame.setWidth(e.getValue()));
             attached = true;
         }
@@ -78,9 +80,9 @@ public class Click extends GuiScreen {
             if (moduleManager.getModulesFromCategory(moduleCategory).size() > 0) {
                 getFrames().add(new CategoryFrame(moduleCategory, moduleManager, x, y, 110, 16));
                 if (x + 220 >= new ScaledResolution(Minecraft.getMinecraft()).getScaledWidth()) {
-                    x = CLICK_GUI.get().catEars.getValue() ? 14 : 2;
-                    y += CLICK_GUI.get().catEars.getValue() ? 32 : 20;
-                } else x += (CLICK_GUI.get().catEars.getValue() ? 132 : 112);
+                    x = CLICK_GUI.get().catEars.getValue() ? 14 * Math.round(CLICK_GUI.get().guiScale.getValue()) : 2;
+                    y += CLICK_GUI.get().catEars.getValue() ? 32 * CLICK_GUI.get().guiScale.getValue() : 20;
+                } else x += (CLICK_GUI.get().catEars.getValue() ? 132 * CLICK_GUI.get().guiScale.getValue() : 112);
             }
         }
 
@@ -101,9 +103,12 @@ public class Click extends GuiScreen {
 
         getFrames().forEach(Frame::init);
         oldVal = CLICK_GUI.get().catEars.getValue();
+        GL11.glScalef(x * CLICK_GUI.get().guiScale.getValue(), y * CLICK_GUI.get().guiScale.getValue(), 0 * CLICK_GUI.get().guiScale.getValue());
+        GL11.glPushMatrix();
     }
 
     @Override
+    @ParametersAreNonnullByDefault
     public void onResize(Minecraft mcIn, int w, int h) {
         super.onResize(mcIn, w, h);
         init();
@@ -132,6 +137,8 @@ public class Click extends GuiScreen {
                 bufferbuilder.pos(this.width, this.height, 0.0D).tex((float)this.width / 32.0F, (float)this.height / 32.0F + (float)0).color(64, 64, 64, 255).endVertex();
                 bufferbuilder.pos(this.width, 0.0D, 0.0D).tex((float)this.width / 32.0F, 0).color(64, 64, 64, 255).endVertex();
                 bufferbuilder.pos(0.0D, 0.0D, 0.0D).tex(0.0D, 0).color(64, 64, 64, 255).endVertex();
+                GL11.glScalef(this.width * CLICK_GUI.get().guiScale.getValue(), this.height * CLICK_GUI.get().guiScale.getValue(), 0.0f * CLICK_GUI.get().guiScale.getValue());
+                GL11.glPushMatrix();
                 tessellator.draw();
             }
         }

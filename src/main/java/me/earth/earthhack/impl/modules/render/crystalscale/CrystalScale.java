@@ -26,6 +26,6 @@ public class CrystalScale extends Module
         super("CrystalScale", Category.Render);
         this.listeners.add(new ListenerDestroyEntities(this));
         this.listeners.add(new ListenerSpawnObject(this));
+        this.setData(new CrystalScaleData(this));
     }
-
 }
